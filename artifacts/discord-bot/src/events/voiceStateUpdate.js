@@ -1,7 +1,7 @@
 // Voice State Update - Handle bot/user disconnections (Kazagumo)
 // Developed by Sxy.com | Sxyware
 
-import { getPlayer } from '../music/musicManager.js';
+import { getPlayer, is247 } from '../music/musicManager.js';
 
 export default {
   name: 'voiceStateUpdate',
@@ -18,11 +18,13 @@ export default {
       return;
     }
 
-    // If a user left and bot is now alone — disconnect after 30s
+    // If a user left and bot is now alone — disconnect after 30s (skip if 24/7)
     if (oldState.id !== client.user.id) {
+      if (is247(guildId)) return;
       const botChannel = oldState.guild.members.me?.voice?.channel;
       if (botChannel && botChannel.members.filter((m) => !m.user.bot).size === 0) {
         setTimeout(() => {
+          if (is247(guildId)) return;
           const p = getPlayer(guildId);
           if (!p) return;
           const ch = oldState.guild.members.me?.voice?.channel;

@@ -11,6 +11,13 @@ import {
   EmbedBuilder,
 } from 'discord.js';
 import { config } from '../config.js';
+import {
+  is247,
+  isAutoplay,
+  rememberTrack,
+  findRelatedTrack,
+  getLastTrack,
+} from './musicManager.js';
 
 // Per-guild now playing message tracking
 const nowPlayingState = new Map(); // guildId -> { msg, interval, collector }
@@ -150,6 +157,7 @@ export function registerPlayerEvents(client) {
   if (!manager) return;
 
   manager.on('playerStart', async (player, track) => {
+    rememberTrack(player.guildId, track);
     await sendNowPlaying(player, client);
   });
 
@@ -159,17 +167,45 @@ export function registerPlayerEvents(client) {
 
   manager.on('playerEmpty', async (player) => {
     const channel = client.channels.cache.get(player.textId);
+
+    if (isAutoplay(player.guildId)) {
+      const last = getLastTrack(player.guildId);
+      if (last) {
+        try {
+          const next = await findRelatedTrack(player.guildId, last, last.requester);
+          if (next) {
+            player.queue.add(next);
+            player.play();
+            if (channel) {
+              channel.send({
+                content: `🤖 **Autoplay** → [${next.title}](${next.uri})`,
+              }).catch(() => {});
+            }
+            return;
+          }
+        } catch {
+          // fall through
+        }
+      }
+    }
+
     if (channel) {
       const embed = new EmbedBuilder()
         .setColor(config.colors.primary)
         .setTitle('⏹️ Kuyruk Bitti')
-        .setDescription('Sıradaki şarkı kalmadı. 30 saniye sonra ses kanalından çıkacağım.')
+        .setDescription(
+          is247(player.guildId)
+            ? '♾️ 24/7 modu aktif — kanaldan çıkmıyorum.'
+            : 'Sıradaki şarkı kalmadı. 30 saniye sonra ses kanalından çıkacağım.',
+        )
         .setFooter({ text: config.footer })
         .setTimestamp();
       channel.send({ embeds: [embed] }).catch(() => {});
     }
 
     cleanupNowPlaying(player.guildId);
+
+    if (is247(player.guildId)) return;
 
     setTimeout(() => {
       const p = manager.players.get(player.guildId);

@@ -59,15 +59,6 @@ export const config = {
         },
       ],
 
-  // Economy settings
-  economy: {
-    dailyMin: 1000,
-    dailyMax: 2500,
-    currency: '💰',
-    currencyName: 'Sxy Coin',
-    dailyCooldown: 86400000, // 24 hours in ms
-  },
-
   // Leveling settings
   leveling: {
     xpMin: 15,

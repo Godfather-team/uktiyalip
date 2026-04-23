@@ -151,6 +151,79 @@ export function getManager() {
 }
 
 // ============================================================
+// 24/7 + AUTOPLAY STATE (per guild)
+// ============================================================
+
+const stay247 = new Set();
+const autoplay = new Set();
+const autoplayHistory = new Map();
+
+export function is247(guildId) {
+  return stay247.has(guildId);
+}
+
+export function toggle247(guildId) {
+  if (stay247.has(guildId)) {
+    stay247.delete(guildId);
+    return false;
+  }
+  stay247.add(guildId);
+  return true;
+}
+
+export function isAutoplay(guildId) {
+  return autoplay.has(guildId);
+}
+
+export function toggleAutoplay(guildId) {
+  if (autoplay.has(guildId)) {
+    autoplay.delete(guildId);
+    return false;
+  }
+  autoplay.add(guildId);
+  return true;
+}
+
+export function rememberTrack(guildId, track) {
+  const arr = autoplayHistory.get(guildId) || [];
+  arr.push(track);
+  if (arr.length > 10) arr.shift();
+  autoplayHistory.set(guildId, arr);
+}
+
+export function getLastTrack(guildId) {
+  const arr = autoplayHistory.get(guildId);
+  return arr && arr.length ? arr[arr.length - 1] : null;
+}
+
+export async function findRelatedTrack(guildId, lastTrack, requester) {
+  if (!manager || !lastTrack) return null;
+  const seed = `${lastTrack.author || ''} ${lastTrack.title || ''}`.trim();
+  if (!seed) return null;
+
+  const queries = [
+    `${lastTrack.author} mix`,
+    `${lastTrack.author} top songs`,
+    `${seed} radio`,
+    seed,
+  ];
+
+  const history = autoplayHistory.get(guildId) || [];
+  const seenUris = new Set(history.map((t) => t.uri).filter(Boolean));
+
+  for (const q of queries) {
+    try {
+      const res = await manager.search(q, { requester });
+      const fresh = res.tracks.filter((t) => t.uri && !seenUris.has(t.uri));
+      if (fresh.length) return fresh[Math.floor(Math.random() * Math.min(fresh.length, 5))];
+    } catch {
+      // try next
+    }
+  }
+  return null;
+}
+
+// ============================================================
 // HELPERS
 // ============================================================
 

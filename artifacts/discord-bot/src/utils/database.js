@@ -27,37 +27,6 @@ function writeDB(file, data) {
 }
 
 // ============================================================
-// ECONOMY DATABASE
-// ============================================================
-
-export function getEconomyUser(guildId, userId) {
-  const db = readDB('economy.json');
-  const key = `${guildId}_${userId}`;
-  return db[key] || { balance: 0, lastDaily: 0 };
-}
-
-export function setEconomyUser(guildId, userId, data) {
-  const db = readDB('economy.json');
-  const key = `${guildId}_${userId}`;
-  db[key] = { ...db[key], ...data };
-  writeDB('economy.json', db);
-}
-
-export function addBalance(guildId, userId, amount) {
-  const user = getEconomyUser(guildId, userId);
-  setEconomyUser(guildId, userId, { balance: (user.balance || 0) + amount });
-}
-
-export function getEconomyLeaderboard(guildId) {
-  const db = readDB('economy.json');
-  return Object.entries(db)
-    .filter(([key]) => key.startsWith(guildId))
-    .map(([key, data]) => ({ userId: key.replace(`${guildId}_`, ''), ...data }))
-    .sort((a, b) => b.balance - a.balance)
-    .slice(0, 10);
-}
-
-// ============================================================
 // LEVELING DATABASE
 // ============================================================
 
@@ -276,6 +245,95 @@ export function setGuildSettings(guildId, patch) {
   db[guildId] = { ...DEFAULT_GUILD_SETTINGS, ...(db[guildId] || {}), ...patch };
   writeDB('guildSettings.json', db);
   return db[guildId];
+}
+
+// ============================================================
+// PROTECTION CONFIG (anti-raid, anti-link, anti-mention)
+// ============================================================
+
+const DEFAULT_PROTECTION = {
+  antiRaid: false,
+  raidThreshold: 8,
+  raidWindowMs: 10000,
+  raidCooldownMs: 5 * 60 * 1000,
+  raidAction: 'lock', // 'lock' | 'kick' | 'ban'
+  antiLink: false, // false | 'invite' | 'all'
+  linkPunish: 'delete', // 'delete' | 'timeout'
+  linkTimeoutMs: 5 * 60 * 1000,
+  linkWhitelistRoles: [],
+  antiMention: true,
+  maxMentions: 5,
+  mentionTimeoutMs: 10 * 60 * 1000,
+  logChannel: null,
+};
+
+export function getProtectionConfig(guildId) {
+  const db = readDB('protection.json');
+  return { ...DEFAULT_PROTECTION, ...(db[guildId] || {}) };
+}
+
+export function setProtectionConfig(guildId, patch) {
+  const db = readDB('protection.json');
+  db[guildId] = { ...DEFAULT_PROTECTION, ...(db[guildId] || {}), ...patch };
+  writeDB('protection.json', db);
+  return db[guildId];
+}
+
+// ============================================================
+// WELCOMER / GOODBYE CONFIG
+// ============================================================
+
+const DEFAULT_WELCOMER = {
+  welcomeEnabled: false,
+  welcomeChannel: null,
+  welcomeMessage: 'Hoş geldin {user}! Sunucudaki kişi sayısı: **{memberCount}**',
+  welcomeDM: null,
+  goodbyeEnabled: false,
+  goodbyeChannel: null,
+  goodbyeMessage: 'Güle güle **{username}**! Aramızdan ayrıldı.',
+  autoRole: null,
+};
+
+export function getWelcomerConfig(guildId) {
+  const db = readDB('welcomer.json');
+  return { ...DEFAULT_WELCOMER, ...(db[guildId] || {}) };
+}
+
+export function setWelcomerConfig(guildId, patch) {
+  const db = readDB('welcomer.json');
+  db[guildId] = { ...DEFAULT_WELCOMER, ...(db[guildId] || {}), ...patch };
+  writeDB('welcomer.json', db);
+  return db[guildId];
+}
+
+// ============================================================
+// GIVEAWAYS
+// ============================================================
+
+export function getGiveaways() {
+  return readDB('giveaways.json');
+}
+
+export function saveGiveaway(g) {
+  const db = readDB('giveaways.json');
+  db[g.messageId] = g;
+  writeDB('giveaways.json', db);
+}
+
+export function getGiveaway(messageId) {
+  const db = readDB('giveaways.json');
+  return db[messageId] || null;
+}
+
+export function deleteGiveaway(messageId) {
+  const db = readDB('giveaways.json');
+  delete db[messageId];
+  writeDB('giveaways.json', db);
+}
+
+export function listActiveGiveaways() {
+  const db = readDB('giveaways.json');
+  return Object.values(db).filter((g) => !g.ended);
 }
 
 // ============================================================

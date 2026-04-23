@@ -4,6 +4,7 @@
 import { errorEmbed } from '../utils/embeds.js';
 import { createTicket, claimTicket, closeTicket } from '../utils/tickets.js';
 import { handleRoleButton } from '../utils/reactionRoles.js';
+import { getGiveaway, saveGiveaway } from '../utils/database.js';
 
 export default {
   name: 'interactionCreate',
@@ -21,6 +22,26 @@ export default {
         if (id === 'ticket_claim') return await claimTicket(interaction);
         if (id === 'ticket_close') return await closeTicket(interaction);
         if (id.startsWith('rrole:')) return await handleRoleButton(interaction);
+        if (id === 'giveaway_join') {
+          const g = getGiveaway(interaction.message.id);
+          if (!g || g.ended) {
+            return interaction.reply({ content: '❌ Bu çekiliş aktif değil.', ephemeral: true });
+          }
+          if (g.participants.includes(interaction.user.id)) {
+            g.participants = g.participants.filter((u) => u !== interaction.user.id);
+            saveGiveaway(g);
+            return interaction.reply({
+              content: `🚪 Çekilişten ayrıldın. (Toplam: ${g.participants.length})`,
+              ephemeral: true,
+            });
+          }
+          g.participants.push(interaction.user.id);
+          saveGiveaway(g);
+          return interaction.reply({
+            content: `🎉 Çekilişe katıldın! (Toplam: ${g.participants.length})`,
+            ephemeral: true,
+          });
+        }
       } catch (err) {
         console.error('[Buttons] hata:', err);
         if (!interaction.replied && !interaction.deferred) {

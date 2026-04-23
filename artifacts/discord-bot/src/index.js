@@ -14,6 +14,7 @@ import { loadCommands } from './handlers/commandHandler.js';
 import { loadEvents } from './handlers/eventHandler.js';
 import { initManager } from './music/musicManager.js';
 import { registerPlayerEvents } from './music/playerEvents.js';
+import { startGiveawayTimer } from './commands/utility/giveaway.js';
 import { getDueReminders } from './utils/database.js';
 import { startAutonomousLoop } from './utils/autonomousAI.js';
 
@@ -84,6 +85,7 @@ client.once('clientReady', async (readyClient) => {
 
   // Otonom AI döngüsü
   startAutonomousLoop(readyClient);
+  startGiveawayTimer(readyClient);
 
   // Reminder ticker
   setInterval(async () => {
