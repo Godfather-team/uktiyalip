@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["nodejs_22", "pnpm-9_x"]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile --filter @workspace/discord-bot..."]
+
+[start]
+cmd = "pnpm --filter @workspace/discord-bot start"

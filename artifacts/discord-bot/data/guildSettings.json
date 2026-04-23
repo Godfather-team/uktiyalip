@@ -1,0 +1,22 @@
+{
+  "1495110970857754644": {
+    "welcomeChannel": "1495111369819815977",
+    "goodbyeChannel": "1496818625582071871",
+    "modLogChannel": "1495111440355299440",
+    "messageLogChannel": "1496818627008135278",
+    "generalChannel": "1495111379428835449",
+    "musicChannel": "1495111410554896425",
+    "aiChannel": "1496818628006514728",
+    "muteRole": "1495111353302778088",
+    "autoRole": "1495111349146091712",
+    "modRole": "1495111344419246180",
+    "djRole": null,
+    "setupCompletedAt": 1776940651080,
+    "setupBy": "1483984456393035946",
+    "rulesChannel": "1495111365189177467",
+    "announcementChannel": "1495111367101907168",
+    "ticketPanelChannel": "1496822315537924276",
+    "ticketCategory": "1496822314476765218",
+    "autonomousMode": true
+  }
+}
