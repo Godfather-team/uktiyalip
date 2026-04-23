@@ -18,5 +18,25 @@
     "ticketPanelChannel": "1496822315537924276",
     "ticketCategory": "1496822314476765218",
     "autonomousMode": true
+  },
+  "1494755608224596192": {
+    "welcomeChannel": "1494762033659248840",
+    "goodbyeChannel": "1496938116886564894",
+    "modLogChannel": "1494762126353498214",
+    "messageLogChannel": "1496938123668750418",
+    "generalChannel": "1494801291350900856",
+    "musicChannel": "1494762096221749249",
+    "aiChannel": "1494762098750656522",
+    "muteRole": "1494761993008054413",
+    "autoRole": "1494761978793558097",
+    "modRole": "1494761973877833830",
+    "djRole": "1494762011718848543",
+    "setupCompletedAt": 1776968260519,
+    "setupBy": "1483984456393035946",
+    "autonomousMode": true,
+    "rulesChannel": "1494762023714684939",
+    "announcementChannel": "1494762086247694580",
+    "ticketPanelChannel": "1496938120220905482",
+    "ticketCategory": "1496938119142969344"
   }
 }
