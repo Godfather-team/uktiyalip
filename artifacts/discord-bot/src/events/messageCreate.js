@@ -9,11 +9,13 @@ import { errorEmbed } from '../utils/embeds.js';
 import { runAutomod } from '../utils/automod.js';
 import { AI_TOOLS, executeTool } from '../utils/aiTools.js';
 
-// OpenAI client using Replit AI integration
+// AI client - Pollinations.ai (ücretsiz, key gerektirmez, OpenAI uyumlu)
+// Model: 'openai' (gpt-4o-mini tabanlı, tool calling destekler)
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || 'dummy',
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  apiKey: 'free',
+  baseURL: 'https://text.pollinations.ai/openai',
 });
+const AI_MODEL = 'openai';
 
 // Conversation history per channel (for AI memory)
 const conversationHistory = new Map();
@@ -353,7 +355,7 @@ async function runAgentLoop(message, history, systemPrompt) {
   try {
     for (let step = 0; step < MAX_STEPS; step++) {
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: AI_MODEL,
         messages,
         tools: AI_TOOLS,
         tool_choice: 'auto',

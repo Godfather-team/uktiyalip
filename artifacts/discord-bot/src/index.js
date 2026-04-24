@@ -15,7 +15,7 @@ import { loadEvents } from './handlers/eventHandler.js';
 import { initManager } from './music/musicManager.js';
 import { registerPlayerEvents } from './music/playerEvents.js';
 import { startGiveawayTimer } from './commands/utility/giveaway.js';
-import { getDueReminders } from './utils/database.js';
+import { getDueReminders, flushAll, statsSummary, DB_DIR } from './utils/database.js';
 import { startAutonomousLoop } from './utils/autonomousAI.js';
 
 // Start keep-alive server for Replit
@@ -77,6 +77,13 @@ client.once('clientReady', async (readyClient) => {
   console.log(`[Bot] ✅ ${readyClient.user.tag} olarak giriş yapıldı.`);
   console.log(`[Bot] 🌐 ${readyClient.guilds.cache.size} sunucuda aktif.`);
 
+  // Kayıtlı verileri özetle
+  console.log(`[DB] 📂 Veri yolu: ${DB_DIR}`);
+  const stats = statsSummary();
+  for (const [file, count] of Object.entries(stats)) {
+    if (count > 0) console.log(`[DB] ✓ ${file}: ${count} kayıt`);
+  }
+
   // Set bot activity
   readyClient.user.setActivity('🎵 Sxyware | /help', { type: 2 });
 
@@ -122,6 +129,37 @@ client.on('warn', (info) => {
 client.on('shardError', (error) => {
   console.error('[Discord] Shard error:', error?.message || error);
 });
+
+// ============================================================
+// GRACEFUL SHUTDOWN — bot kapanırken tüm verileri diske flush et
+// SIGTERM (Railway/Replit restart), SIGINT (Ctrl+C) yakala
+// ============================================================
+
+let shuttingDown = false;
+function gracefulShutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`\n[Bot] 🛑 ${signal} alındı, kapanıyor...`);
+  try {
+    flushAll();
+  } catch (err) {
+    console.error('[Bot] Flush hatası:', err.message);
+  }
+  try {
+    client.destroy();
+  } catch {}
+  console.log('[Bot] 👋 Güvenli kapanış tamamlandı.');
+  setTimeout(() => process.exit(0), 500);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGHUP', () => gracefulShutdown('SIGHUP'));
+
+// Ek güvenlik: her 60 saniyede otomatik flush (cache zaten her yazmada flush eder, bu sigorta)
+setInterval(() => {
+  try { flushAll(); } catch {}
+}, 60 * 1000);
 
 client.on('debug', (info) => {
   if (info.includes('Heartbeat') || info.includes('Sending a heartbeat')) return;

@@ -6,24 +6,91 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_DIR = path.join(__dirname, '../../data');
+
+// DATA_DIR env var → Railway Volume path için (örn: /data)
+// Yoksa proje dizinindeki ../../data kullanılır
+export const DB_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(__dirname, '../../data');
 
 // Ensure data directory exists
-if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+if (!fs.existsSync(DB_DIR)) {
+  fs.mkdirSync(DB_DIR, { recursive: true });
+  console.log(`[DB] 📁 Veri klasörü oluşturuldu: ${DB_DIR}`);
+} else {
+  console.log(`[DB] 📁 Veri klasörü hazır: ${DB_DIR}`);
+}
+
+// In-memory cache → her okumada disk'e gitme, fakat her yazmada disk'e flush
+const dbCache = new Map();
 
 function readDB(file) {
+  if (dbCache.has(file)) return dbCache.get(file);
   const filePath = path.join(DB_DIR, file);
-  if (!fs.existsSync(filePath)) return {};
+  let data = {};
+  if (fs.existsSync(filePath)) {
+    try {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (err) {
+      console.error(`[DB] ⚠️ ${file} okunamadı:`, err.message);
+      // Bozuk dosya yedeği
+      try {
+        fs.copyFileSync(filePath, filePath + '.corrupt-' + Date.now());
+      } catch {}
+      data = {};
+    }
+  }
+  dbCache.set(file, data);
+  return data;
+}
+
+// Atomic yazma: önce .tmp dosyasına yaz, sonra rename → güç kesintisinde bile bozulmaz
+function writeDB(file, data) {
+  const filePath = path.join(DB_DIR, file);
+  const tmpPath = filePath + '.tmp';
   try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch {
-    return {};
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2));
+    fs.renameSync(tmpPath, filePath);
+    dbCache.set(file, data);
+  } catch (err) {
+    console.error(`[DB] ❌ ${file} yazılamadı:`, err.message);
+    throw err;
   }
 }
 
-function writeDB(file, data) {
-  const filePath = path.join(DB_DIR, file);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+// Bot kapanırken çağrılır → cache'deki her şeyi diske flush eder
+export function flushAll() {
+  let count = 0;
+  for (const [file, data] of dbCache.entries()) {
+    try {
+      const filePath = path.join(DB_DIR, file);
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      count++;
+    } catch (err) {
+      console.error(`[DB] flush hatası ${file}:`, err.message);
+    }
+  }
+  console.log(`[DB] 💾 ${count} dosya kaydedildi.`);
+}
+
+// Başlangıçta mevcut verileri özetle
+export function statsSummary() {
+  const files = ['leveling.json', 'warnings.json', 'marriage.json', 'afk.json', 'guildSettings.json', 'giveaways.json', 'antinuke.json', 'automod.json'];
+  const stats = {};
+  for (const f of files) {
+    const filePath = path.join(DB_DIR, f);
+    if (fs.existsSync(filePath)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        stats[f] = Object.keys(data).length;
+      } catch {
+        stats[f] = '?';
+      }
+    } else {
+      stats[f] = 0;
+    }
+  }
+  return stats;
 }
 
 // ============================================================
