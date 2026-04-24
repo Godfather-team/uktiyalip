@@ -3,7 +3,7 @@
 
 import OpenAI from 'openai';
 import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { addXP, getLevelUser, getXPForLevel, getAfk, removeAfk, getGuildSettings } from '../utils/database.js';
+import { addXP, getLevelUser, getXPForLevel, getAfk, removeAfk, getGuildSettings, getSticky, setSticky } from '../utils/database.js';
 import { config } from '../config.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { runAutomod } from '../utils/automod.js';
@@ -23,6 +23,9 @@ const conversationHistory = new Map();
 // Dedup: aynı message.id için handler'ın iki kez çalışmasını engelle
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 10 * 60 * 1000);
+
+// Sticky mesaj throttle (kanal başına en son yenileme zamanı)
+const stickyBumpCache = new Map();
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -148,6 +151,37 @@ export default {
     // ============================================================
     const blocked = await runAutomod(message);
     if (blocked) return;
+
+    // ============================================================
+    // STICKY MESSAGE — kanaldaki sabit mesajı en aşağıya re-post et
+    // Throttle: aynı kanalda 5 sn içinde tekrar yenileme
+    // ============================================================
+    try {
+      const sticky = getSticky(message.channel.id);
+      if (sticky && sticky.messageId !== message.id) {
+        const lastBump = stickyBumpCache.get(message.channel.id) || 0;
+        if (Date.now() - lastBump > 5000) {
+          stickyBumpCache.set(message.channel.id, Date.now());
+          // Eski sticky'yi sil
+          message.channel.messages.fetch(sticky.messageId)
+            .then((m) => m.delete().catch(() => {}))
+            .catch(() => {});
+          // Yeniden gönder
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.primary)
+            .setTitle('📌 Sabit Mesaj')
+            .setDescription(sticky.text)
+            .setFooter({ text: config.footer });
+          message.channel.send({ embeds: [embed] })
+            .then((sent) => {
+              setSticky(message.channel.id, { ...sticky, messageId: sent.id });
+            })
+            .catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.error('[Sticky] hata:', err.message);
+    }
 
     // ============================================================
     // AFK SYSTEM

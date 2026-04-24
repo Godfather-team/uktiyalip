@@ -283,6 +283,33 @@ export function removeMarriage(guildId, a) {
 }
 
 // ============================================================
+// STICKY MESSAGES (channel'a sabit mesaj)
+// ============================================================
+
+export function getSticky(channelId) {
+  const db = readDB('sticky.json');
+  return db[channelId] || null;
+}
+
+export function setSticky(channelId, data) {
+  const db = readDB('sticky.json');
+  db[channelId] = data;
+  writeDB('sticky.json', db);
+}
+
+export function removeSticky(channelId) {
+  const db = readDB('sticky.json');
+  if (!db[channelId]) return false;
+  delete db[channelId];
+  writeDB('sticky.json', db);
+  return true;
+}
+
+export function getAllSticky() {
+  return readDB('sticky.json');
+}
+
+// ============================================================
 // GUILD SETTINGS (per-server config from /setup)
 // ============================================================
 

@@ -72,6 +72,7 @@ const categories = {
     '`/botinfo` — Bot bilgisi',
     '`/poll [soru]` — Anket oluştur',
     '`/announce [kanal] [mesaj]` — Duyuru',
+    '`/sticky set/remove/show` — Kanala sabit mesaj',
     '`/chat [mesaj]` — AI ile konuş',
   ],
 };
