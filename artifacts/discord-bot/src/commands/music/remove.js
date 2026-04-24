@@ -27,7 +27,8 @@ export default {
       });
     }
 
-    const removed = player.queue.splice(idx, 1)[0];
+    const removed = player.queue[idx];
+    player.queue.remove(idx);
     interaction.reply({
       embeds: [successEmbed('Silindi', `🗑️ **[${removed.title}](${removed.uri})** kuyruktan kaldırıldı.`)],
     });

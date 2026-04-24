@@ -42,19 +42,15 @@ const categories = {
     '`/autoplay` — Otomatik çal',
   ],
   '🛡️ Koruma': [
-    '`/protection antiraid` — Toplu katılım koruması',
-    '`/protection antilink` — Link engelleme',
-    '`/protection antimention` — Mention spam koruması',
-    '`/protection status` — Mevcut ayarlar',
-    '`/antinuke` — Antinuke ayarları',
+    '`/antinuke` — Antinuke ayarları (anti-ban/kick/spam)',
+    '`/automod` — Otomatik moderasyon',
+    '*Hoş geldin / güle güle otomatiktir — kanal ismine göre algılanır.*',
   ],
-  '🎉 Çekiliş & Welcomer': [
+  '🎉 Çekiliş': [
     '`/giveaway start` — Çekiliş başlat',
     '`/giveaway end` — Çekilişi bitir',
     '`/giveaway reroll` — Tekrar çek',
-    '`/welcomer welcome` — Hoş geldin mesajı',
-    '`/welcomer goodbye` — Güle güle mesajı',
-    '`/welcomer autorole` — Otomatik rol',
+    '`/giveaway list` — Aktif çekilişler',
   ],
   '⭐ Seviye': [
     '`/rank [kullanıcı]` — Seviye kartı',

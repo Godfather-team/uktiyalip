@@ -1,19 +1,10 @@
-// Antinuke kick detection + Goodbye messages
+// Antinuke kick detection + Otomatik güle güle
 // Developed by Sxy.com | Sxyware
 
 import { AuditLogEvent, EmbedBuilder } from 'discord.js';
 import { handleAntinukeAction, fetchAuditExecutor } from '../utils/antinuke.js';
-import { getWelcomerConfig } from '../utils/database.js';
+import { findChannel } from '../utils/autoChannel.js';
 import { config } from '../config.js';
-
-function format(template, member) {
-  return template
-    .replace(/\{user\}/g, `<@${member.id}>`)
-    .replace(/\{username\}/g, member.user.username)
-    .replace(/\{tag\}/g, member.user.tag)
-    .replace(/\{server\}/g, member.guild.name)
-    .replace(/\{memberCount\}/g, member.guild.memberCount);
-}
 
 export default {
   name: 'guildMemberRemove',
@@ -30,17 +21,18 @@ export default {
       });
     }
 
-    // Goodbye message
-    const cfg = getWelcomerConfig(member.guild.id);
-    if (!cfg.goodbyeEnabled || !cfg.goodbyeChannel) return;
+    if (member.user.bot) return;
 
-    const channel = member.guild.channels.cache.get(cfg.goodbyeChannel);
-    if (!channel?.isTextBased?.()) return;
+    // Otomatik güle güle
+    const channel = findChannel(member.guild, 'goodbye');
+    if (!channel) return;
 
     const embed = new EmbedBuilder()
       .setColor(config.colors.error || 0xDC143C)
       .setTitle(`👋 ${member.user.username} ayrıldı`)
-      .setDescription(format(cfg.goodbyeMessage, member))
+      .setDescription(
+        `**${member.user.username}** aramızdan ayrıldı. Artık **${member.guild.memberCount}** kişiyiz. 💔`,
+      )
       .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
       .setFooter({ text: config.footer })
       .setTimestamp();

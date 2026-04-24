@@ -48,12 +48,29 @@ export async function loadCommands(client) {
     }
   }
 
-  // Register slash commands globally
+  // Register slash commands per-guild (anında yansır) + global (yedek)
   const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
   try {
     console.log(`[Commands] ${commands.length} slash komut Discord'a kaydediliyor...`);
+
+    // Global (yeni eklenen sunucularda da görünür ama 1 saate kadar gecikebilir)
     await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
+
+    // Per-guild (mevcut sunucularda anında yansır)
+    const guilds = [...client.guilds.cache.values()];
+    for (const guild of guilds) {
+      try {
+        await rest.put(
+          Routes.applicationGuildCommands(client.user.id, guild.id),
+          { body: commands },
+        );
+        console.log(`[Commands] ↳ ${guild.name} (${guild.id}) için kaydedildi.`);
+      } catch (err) {
+        console.error(`[Commands] ${guild.name} için hata:`, err.message);
+      }
+    }
+
     console.log(`[Commands] ✅ ${commands.length} komut başarıyla kaydedildi!`);
   } catch (err) {
     console.error('[Commands] Komutlar kaydedilirken hata:', err.message);

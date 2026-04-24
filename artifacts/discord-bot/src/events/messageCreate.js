@@ -7,7 +7,6 @@ import { addXP, getLevelUser, getXPForLevel, getAfk, removeAfk, getGuildSettings
 import { config } from '../config.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { runAutomod } from '../utils/automod.js';
-import { checkAntiLink, checkAntiMention } from '../utils/protection.js';
 import { AI_TOOLS, executeTool } from '../utils/aiTools.js';
 
 // OpenAI client using Replit AI integration
@@ -147,12 +146,6 @@ export default {
     // ============================================================
     const blocked = await runAutomod(message);
     if (blocked) return;
-
-    // ============================================================
-    // PROTECTION (anti-link, anti-mention)
-    // ============================================================
-    if (await checkAntiLink(message)) return;
-    if (await checkAntiMention(message)) return;
 
     // ============================================================
     // AFK SYSTEM

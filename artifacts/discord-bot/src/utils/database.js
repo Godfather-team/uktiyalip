@@ -248,65 +248,6 @@ export function setGuildSettings(guildId, patch) {
 }
 
 // ============================================================
-// PROTECTION CONFIG (anti-raid, anti-link, anti-mention)
-// ============================================================
-
-const DEFAULT_PROTECTION = {
-  antiRaid: false,
-  raidThreshold: 8,
-  raidWindowMs: 10000,
-  raidCooldownMs: 5 * 60 * 1000,
-  raidAction: 'lock', // 'lock' | 'kick' | 'ban'
-  antiLink: false, // false | 'invite' | 'all'
-  linkPunish: 'delete', // 'delete' | 'timeout'
-  linkTimeoutMs: 5 * 60 * 1000,
-  linkWhitelistRoles: [],
-  antiMention: true,
-  maxMentions: 5,
-  mentionTimeoutMs: 10 * 60 * 1000,
-  logChannel: null,
-};
-
-export function getProtectionConfig(guildId) {
-  const db = readDB('protection.json');
-  return { ...DEFAULT_PROTECTION, ...(db[guildId] || {}) };
-}
-
-export function setProtectionConfig(guildId, patch) {
-  const db = readDB('protection.json');
-  db[guildId] = { ...DEFAULT_PROTECTION, ...(db[guildId] || {}), ...patch };
-  writeDB('protection.json', db);
-  return db[guildId];
-}
-
-// ============================================================
-// WELCOMER / GOODBYE CONFIG
-// ============================================================
-
-const DEFAULT_WELCOMER = {
-  welcomeEnabled: false,
-  welcomeChannel: null,
-  welcomeMessage: 'Hoş geldin {user}! Sunucudaki kişi sayısı: **{memberCount}**',
-  welcomeDM: null,
-  goodbyeEnabled: false,
-  goodbyeChannel: null,
-  goodbyeMessage: 'Güle güle **{username}**! Aramızdan ayrıldı.',
-  autoRole: null,
-};
-
-export function getWelcomerConfig(guildId) {
-  const db = readDB('welcomer.json');
-  return { ...DEFAULT_WELCOMER, ...(db[guildId] || {}) };
-}
-
-export function setWelcomerConfig(guildId, patch) {
-  const db = readDB('welcomer.json');
-  db[guildId] = { ...DEFAULT_WELCOMER, ...(db[guildId] || {}), ...patch };
-  writeDB('welcomer.json', db);
-  return db[guildId];
-}
-
-// ============================================================
 // GIVEAWAYS
 // ============================================================
 

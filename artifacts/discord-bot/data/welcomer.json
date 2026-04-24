@@ -1,0 +1,12 @@
+{
+  "1494755608224596192": {
+    "welcomeEnabled": true,
+    "welcomeChannel": "1494762033659248840",
+    "welcomeMessage": "Hoş geldin {user}! Sunucudaki kişi sayısı: **{memberCount}**",
+    "welcomeDM": "Hoşgeldinnnnn",
+    "goodbyeEnabled": false,
+    "goodbyeChannel": null,
+    "goodbyeMessage": "Güle güle **{username}**! Aramızdan ayrıldı.",
+    "autoRole": "1494761990214914048"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "1494755608224596192": {
+    "enabled": false,
+    "antiBan": true,
+    "antiKick": true,
+    "antiChannelDelete": true,
+    "antiRoleDelete": true,
+    "antiBotAdd": true,
+    "threshold": 3,
+    "windowMs": 10000,
+    "whitelist": []
+  }
+}
